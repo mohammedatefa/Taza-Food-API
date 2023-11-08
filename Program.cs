@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TazaFood_API.Extenssions;
 using TazaFood_API.Helpers;
 using TazaFood_Core.IRepositories;
 using TazaFood_Core.Models;
@@ -26,20 +27,8 @@ namespace TazaFood_API
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
-            //Generic Repository Injection
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-            //add mapper services
-            builder.Services.AddAutoMapper(typeof(MappingProfiles));
-
-            //add cors policy
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("mypolicy", corsoptions =>
-                {
-                    corsoptions.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
-                });
-            });
+            //add application services 
+            builder.Services.ApplicationServices();
             #endregion 
 
 

@@ -40,5 +40,18 @@ namespace TazaFood_API.Controllers
 
             return Ok(mapper.Map<Product,ProductReturnToDto>(product));
         }
+
+        [HttpPost]
+        [Route("AddProduct")]
+        public async Task<IActionResult> AddProduct(Product product)
+        {
+            if (ModelState.IsValid)
+            {
+                await productRepo.Add(product);
+                return Ok($"{product} \n is added successfully");
+            }
+            return BadRequest("there is some thing is invalide");
+        }
+
     }
 }
