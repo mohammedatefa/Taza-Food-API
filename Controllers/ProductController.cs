@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TazaFood_API.DTO;
+using TazaFood_API.Helpers;
 using TazaFood_Core.IRepositories;
 using TazaFood_Core.ISpecifications;
 using TazaFood_Core.Models;
+
 
 namespace TazaFood_API.Controllers
 {
@@ -14,12 +15,14 @@ namespace TazaFood_API.Controllers
     {
         private IGenericRepository<Product> productRepo;
         private IMapper mapper;
+        private readonly IWebHostEnvironment environment;
 
-        public ProductController(IGenericRepository<Product> _productRepo,IMapper _mapper)
+        public ProductController(IGenericRepository<Product> _productRepo,IMapper _mapper,IWebHostEnvironment _enviroment)
         {
             productRepo = _productRepo;
             mapper = _mapper;
-
+            environment = _enviroment;
+          
         }
 
         [HttpGet]
@@ -41,17 +44,55 @@ namespace TazaFood_API.Controllers
             return Ok(mapper.Map<Product,ProductReturnToDto>(product));
         }
 
-        [HttpPost]
-        [Route("AddProduct")]
-        public async Task<IActionResult> AddProduct(Product product)
+        [HttpPost("AddProduct")]
+        public async Task<IActionResult> CreateProduct(string name,string description,int rate,int price,int categoryid,IFormFile formfile)
         {
-            if (ModelState.IsValid)
-            {
-                await productRepo.Add(product);
-                return Ok($"{product} \n is added successfully");
-            }
-            return BadRequest("there is some thing is invalide");
+            //upload images first and save it on the database 
+            string ImagePath = await UploadeImage.SaveImage(formfile, this.environment.WebRootPath, name);
+
+            Product product = new Product();
+            product.Name = name;
+            product.Description = description;
+            product.Rate = rate;
+            product.Price = price;
+            product.CategoryId = categoryid;
+            product.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
+            await productRepo.Add(product);
+            return Ok();
+      
         }
+        [HttpPut("UpdateProduct")]
+        public async Task<IActionResult> updateProduct(int id, string name, string description, int rate, int price, int categoryid, IFormFile formfile)
+        {
+            // Retrieve existing product from the database
+            Product existingProduct = await productRepo.GetById(id);
+
+            if (existingProduct == null)
+            {
+                return NotFound();
+            }
+
+            // Upload a new image if provided
+            string ImagePath = formfile != null
+                ? await UploadeImage.SaveImage(formfile, this.environment.WebRootPath, name)
+                : existingProduct.ImageUrl;
+
+            // Update the product properties
+            existingProduct.Name = name;
+            existingProduct.Description = description;
+            existingProduct.Rate = rate;
+            existingProduct.Price = price;
+            existingProduct.CategoryId = categoryid;
+            existingProduct.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
+
+            // Update the product in the database
+            await productRepo.Update(id, existingProduct);
+
+            return Ok();
+        }
+
+
+
 
     }
 }
