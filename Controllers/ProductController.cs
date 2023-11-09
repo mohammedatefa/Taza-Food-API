@@ -34,6 +34,8 @@ namespace TazaFood_API.Controllers
 
             return Ok(mapper.Map<IEnumerable<Product>,IEnumerable<ProductReturnToDto>>(products));
         }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -43,6 +45,7 @@ namespace TazaFood_API.Controllers
 
             return Ok(mapper.Map<Product,ProductReturnToDto>(product));
         }
+
 
         [HttpPost("AddProduct")]
         public async Task<IActionResult> CreateProduct(string name,string description,int rate,int price,int categoryid,IFormFile formfile)
@@ -61,13 +64,15 @@ namespace TazaFood_API.Controllers
             return Ok();
       
         }
+
+
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> updateProduct(int id, string name, string description, int rate, int price, int categoryid, IFormFile formfile)
         {
             // Retrieve existing product from the database
-            Product existingProduct = await productRepo.GetById(id);
+            Product product = await productRepo.GetById(id);
 
-            if (existingProduct == null)
+            if (product == null)
             {
                 return NotFound();
             }
@@ -75,20 +80,50 @@ namespace TazaFood_API.Controllers
             // Upload a new image if provided
             string ImagePath = formfile != null
                 ? await UploadeImage.SaveImage(formfile, this.environment.WebRootPath, name)
-                : existingProduct.ImageUrl;
+                : product.ImageUrl;
 
             // Update the product properties
-            existingProduct.Name = name;
-            existingProduct.Description = description;
-            existingProduct.Rate = rate;
-            existingProduct.Price = price;
-            existingProduct.CategoryId = categoryid;
-            existingProduct.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
+            product.Name = name;
+            product.Description = description;
+            product.Rate = rate;
+            product.Price = price;
+            product.CategoryId = categoryid;
+            product.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
 
             // Update the product in the database
-            await productRepo.Update(id, existingProduct);
+            await productRepo.Update(id, product);
 
-            return Ok();
+            return Ok(product);
+        }
+
+
+        [HttpDelete("DeleteProduct/{productId}")]
+        public async Task<IActionResult> DeleteProduct(int productId)
+        {
+            // Retrieve the existing product from the database
+            Product product = await productRepo.GetById(productId);
+
+            if (product == null)
+            {
+                return NotFound(); // Product not found
+            }
+
+            // Delete the product image if it exists
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                string imagePath = Path.Combine(environment.WebRootPath, product.ImageUrl);
+
+                // Ensure that the file exists before attempting to delete it
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
+            }
+
+            // Delete the product from the database
+            await productRepo.Delete(productId);
+
+            return NoContent(); // Return 204 No Content upon successful deletion
         }
 
 
