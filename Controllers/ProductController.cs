@@ -35,6 +35,16 @@ namespace TazaFood_API.Controllers
             return Ok(mapper.Map<IEnumerable<Product>,IEnumerable<ProductReturnToDto>>(products));
         }
 
+        [HttpGet("GetProductsOrderBy")]
+        public async Task<IActionResult> GetProductsOrderBy(string sort)
+        {
+            //useing sepcification pattern to return products
+            var spec = new ProductWithCategorySpecification(sort);
+            var products = await productRepo.GetAllWithSpec(spec);
+
+            return Ok(mapper.Map<IEnumerable<Product>, IEnumerable<ProductReturnToDto>>(products));
+        }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
