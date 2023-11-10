@@ -25,6 +25,7 @@ namespace TazaFood_API.Controllers
           
         }
 
+        //get all products
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -32,20 +33,11 @@ namespace TazaFood_API.Controllers
             var spec = new ProductWithCategorySpecification();
             var products = await productRepo.GetAllWithSpec(spec);
 
-            return Ok(mapper.Map<IEnumerable<Product>,IEnumerable<ProductReturnToDto>>(products));
-        }
-
-        [HttpGet("GetProductsOrderBy")]
-        public async Task<IActionResult> GetProductsOrderBy(string sort)
-        {
-            //useing sepcification pattern to return products
-            var spec = new ProductWithCategorySpecification(sort);
-            var products = await productRepo.GetAllWithSpec(spec);
-
-            return Ok(mapper.Map<IEnumerable<Product>, IEnumerable<ProductReturnToDto>>(products));
+            return Ok(mapper.Map<IReadOnlyList<Product>,IReadOnlyList<ProductReturnToDto>>(products));
         }
 
 
+        //get productby Id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -53,10 +45,50 @@ namespace TazaFood_API.Controllers
             var spec = new ProductWithCategorySpecification(id);
             var product = await productRepo.GetByIdWithSpec(spec);
 
-            return Ok(mapper.Map<Product,ProductReturnToDto>(product));
+            return Ok(mapper.Map<Product, ProductReturnToDto>(product));
         }
 
 
+        //sorting products by specification type 
+        [HttpGet("GetProductsOrderBy")]
+        public async Task<IActionResult> GetProductsOrderBy(string sort)
+        {
+            //useing sepcification pattern to return products
+            var spec = new ProductWithCategorySpecification(sort);
+            var products = await productRepo.GetAllWithSpec(spec);
+
+            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products));
+        }
+
+
+        //filtteration products by price or rate or category name or by all 
+        [HttpGet("GetProductsFillterBy")]
+        public async Task<IActionResult> GetProductsFillterBy(int?price,int? rate,string?category)
+        {
+            //useing sepcification fillter to return products 
+            var spec = new ProductWithCategorySpecification(price,rate,category);
+            var products = await productRepo.GetAllWithSpec(spec);
+
+            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products));
+        }
+
+        //filtteration products by price or rate or category name or by all 
+        [HttpGet("ProductsPagination")]
+        public async Task<IActionResult> ProductsPagination([FromQuery]ProductPaginationParams prams)
+        {
+            //useing sepcification fillter to return products 
+            var spec = new ProductWithCategorySpecification(prams);
+            var products = await productRepo.GetAllWithSpec(spec);
+            var data = mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products);
+            var countspec = new ProductWithFillterationForPaginationSpecification(prams);
+
+            var count = await productRepo.GetCountWithSpec(countspec);
+
+            return Ok(new ProductPagination<ProductReturnToDto>(prams.pageIndex,prams.Pagesize,count,data));
+        }
+
+
+        //add new product
         [HttpPost("AddProduct")]
         public async Task<IActionResult> CreateProduct(string name,string description,int rate,int price,int categoryid,IFormFile formfile)
         {
@@ -75,7 +107,7 @@ namespace TazaFood_API.Controllers
       
         }
 
-
+        //updaute product
         [HttpPut("UpdateProduct")]
         public async Task<IActionResult> updateProduct(int id, string name, string description, int rate, int price, int categoryid, IFormFile formfile)
         {
@@ -106,7 +138,7 @@ namespace TazaFood_API.Controllers
             return Ok(product);
         }
 
-
+        //delete product
         [HttpDelete("DeleteProduct/{productId}")]
         public async Task<IActionResult> DeleteProduct(int productId)
         {
