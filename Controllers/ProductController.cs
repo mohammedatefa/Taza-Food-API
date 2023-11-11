@@ -72,7 +72,7 @@ namespace TazaFood_API.Controllers
             return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products));
         }
 
-        //filtteration products by price or rate or category name or by all 
+        //pagination 
         [HttpGet("ProductsPagination")]
         public async Task<IActionResult> ProductsPagination([FromQuery]ProductPaginationParams prams)
         {

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using StackExchange.Redis;
 using TazaFood_API.Extenssions;
 using TazaFood_API.Helpers;
 using TazaFood_Core.IRepositories;
@@ -22,10 +23,19 @@ namespace TazaFood_API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            //add connection string 
+            //add sql-database connection 
             builder.Services.AddDbContext<TazaDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
+            });
+
+            //add Redis Connection 
+            builder.Services.AddSingleton<IConnectionMultiplexer>(s =>
+            {
+                var connection = builder.Configuration.GetConnectionString("RedisConnection");
+
+                return ConnectionMultiplexer.Connect(connection);
+
             });
 
             //add application services 
