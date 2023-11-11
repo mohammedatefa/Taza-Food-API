@@ -11,6 +11,10 @@ namespace TazaFood_API.Extenssions
             //Generic Repository Injection
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            //Category Repository Service
+
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+
             //add mapper services
             services.AddAutoMapper(typeof(MappingProfiles));
 

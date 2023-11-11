@@ -40,7 +40,8 @@ namespace TazaFood_API
 
             //add application services 
             builder.Services.ApplicationServices();
-            #endregion 
+
+            #endregion
 
 
             var app = builder.Build();
