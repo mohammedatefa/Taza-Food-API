@@ -18,7 +18,6 @@ namespace TazaFood_API.Controllers
 
         //get cartitems by id
         [HttpGet("{id}")]
-   
         public async Task<ActionResult<UserCart>> GetCart(string id) {
             var cart = await cartItemRepo.GetCartAsync(id);
 
