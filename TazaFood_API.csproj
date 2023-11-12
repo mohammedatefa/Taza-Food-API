@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TazaFood-Repository\TazaFood-Repository.csproj" />
+    <ProjectReference Include="..\TazaFood-Services\TazaFood-Services.csproj" />
   </ItemGroup>
 
 </Project>

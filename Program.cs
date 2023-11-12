@@ -1,11 +1,15 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using StackExchange.Redis;
 using TazaFood_API.Extenssions;
 using TazaFood_API.Helpers;
+using TazaFood_Core.IdentityModels;
 using TazaFood_Core.IRepositories;
 using TazaFood_Core.Models;
 using TazaFood_Repository.Context;
+using TazaFood_Repository.IdentityContext;
 using TazaFood_Repository.Repository;
 
 namespace TazaFood_API
@@ -29,6 +33,13 @@ namespace TazaFood_API
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefualtConnection"));
             });
 
+            //add Identity connection
+            builder.Services.AddDbContext<IdentityContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+            });
+     
+
             //add Redis Connection 
             builder.Services.AddSingleton<IConnectionMultiplexer>(s =>
             {
@@ -41,31 +52,43 @@ namespace TazaFood_API
             //add application services 
             builder.Services.ApplicationServices();
 
+            //add identity services 
+            builder.Services.AddIdentityServices();
+
             #endregion
 
 
             var app = builder.Build();
+
+
             #region Auto Migration
 
             //Add Auto Migration
 
-            var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;
+            using(var scope = app.Services.CreateScope())
+            { 
+                var services = scope.ServiceProvider;
 
-            var ILoggerFactory = services.GetRequiredService<ILoggerFactory>();
-            try
-            {
-                var dbcontext = services.GetRequiredService<TazaDbContext>();
-               await dbcontext.Database.MigrateAsync();
+                var ILoggerFactory = services.GetRequiredService<ILoggerFactory>();
+                try
+                {
+                    var dbcontext = services.GetRequiredService<TazaDbContext>();
+                    await dbcontext.Database.MigrateAsync();
+                    //seeding the initial-data to database
+                    await TazaContextSeed.Dataseeding(dbcontext);
 
-                //seeding the initial-data to database
-               await TazaContextSeed.Dataseeding(dbcontext);
+                    //seeding user to identity database
+                    var usermanger = services.GetRequiredService<UserManager<AppUser>>();
+                    var Identitycontext = services.GetRequiredService<IdentityContext>();
+                    await Identitycontext.Database.MigrateAsync();
+                    await IdentityDbContextSeed.AppUserAsync(usermanger);
+                }
+                catch (Exception ex)
+                {
+                    var logger = ILoggerFactory.CreateLogger<Program>();
+                    logger.LogError(ex, "there is som thing wrong.....");
+                }
             }
-            catch (Exception ex)
-            {
-                var logger = ILoggerFactory.CreateLogger<Program>();
-                logger.LogError(ex, "there is som thing wrong.....");
-            } 
             #endregion 
 
             // Configure the HTTP request pipeline.
@@ -76,14 +99,14 @@ namespace TazaFood_API
             }
 
             #region Middlewares Pipe
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
 
-            app.UseStaticFiles();
-
             app.UseAuthentication();
+            app.UseCors("mypolicy");
             app.UseAuthorization();
 
-            app.UseCors("mypolicy");
+            
             app.MapControllers(); 
             #endregion 
 

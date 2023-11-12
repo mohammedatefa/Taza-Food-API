@@ -35,5 +35,11 @@ namespace TazaFood_API.Controllers
                 return BadRequest("there is error occuerd when add or update cart");
             return neworupdatedcart;
         }
+
+        [HttpDelete]
+        public async Task<ActionResult<bool>> DeleteCart(string id)
+        {
+            return await cartItemRepo.DeleteCartAsync(id); 
+        }
     }
 }

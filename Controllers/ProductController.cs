@@ -84,7 +84,7 @@ namespace TazaFood_API.Controllers
 
             var count = await productRepo.GetCountWithSpec(countspec);
 
-            return Ok(new ProductPagination<ProductReturnToDto>(prams.pageIndex,prams.Pagesize,count,data));
+            return Ok(new ProductPagination<ProductReturnToDto>(prams.Pagesize, prams.pageIndex, count,data));
         }
 
 
