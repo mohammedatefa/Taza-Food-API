@@ -27,6 +27,15 @@ namespace TazaFood_API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            //add session to save the cart item 
+            builder.Services.AddDistributedMemoryCache();
+
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(72);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             //add sql-database connection 
             builder.Services.AddDbContext<TazaDbContext>(options =>
             {
@@ -53,7 +62,7 @@ namespace TazaFood_API
             builder.Services.ApplicationServices();
 
             //add identity services 
-            builder.Services.AddIdentityServices();
+            builder.Services.AddIdentityServices(builder.Configuration);
 
             #endregion
 
@@ -96,12 +105,14 @@ namespace TazaFood_API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+               
             }
 
             #region Middlewares Pipe
+            
             app.UseStaticFiles();
             app.UseHttpsRedirection();
-
+            app.UseSession();
             app.UseAuthentication();
             app.UseCors("mypolicy");
             app.UseAuthorization();

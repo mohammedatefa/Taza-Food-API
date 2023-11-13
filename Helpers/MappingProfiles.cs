@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TazaFood_API.DTO;
+using TazaFood_Core.IdentityModels;
 using TazaFood_Core.Models;
 
 namespace TazaFood_API.Helpers
@@ -13,6 +14,10 @@ namespace TazaFood_API.Helpers
             CreateMap<Product, ProductReturnToDto>()
                 .ForMember(d => d.Category, o => o.MapFrom(s => s.Category.Name))
                 .ForMember(d=>d.ImageUrl,o=>o.MapFrom<ProductImageUrlResolver>());
+
+
+            //mapping to user adress
+            CreateMap<Address, UserAddressDto>().ReverseMap();
         }
     }
 }
