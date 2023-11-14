@@ -1,6 +1,8 @@
 ﻿using TazaFood_API.Helpers;
 using TazaFood_Core.IRepositories;
+using TazaFood_Core.Services;
 using TazaFood_Repository.Repository;
+using TazaFood_Services.Order;
 
 namespace TazaFood_API.Extenssions
 {
@@ -8,7 +10,9 @@ namespace TazaFood_API.Extenssions
     {
         public static IServiceCollection ApplicationServices(this IServiceCollection services)
         {
-            
+
+            //add Unitofwork Service 
+            services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWorkRepository));
             //Generic Repository Injection
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
@@ -21,6 +25,11 @@ namespace TazaFood_API.Extenssions
             //add cartitem services
             services.AddScoped(typeof(ICartItemsRepository), typeof(CartItemRepository));
 
+            //add order service
+            services.AddScoped(typeof(IOrderService), typeof(OrderService));
+
+            
+
             //add cors policy
             services.AddCors(options =>
             {
@@ -29,6 +38,7 @@ namespace TazaFood_API.Extenssions
                     corsoptions.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
                 });
             });
+
             return services;
         }
     }

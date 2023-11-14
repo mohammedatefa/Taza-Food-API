@@ -49,7 +49,6 @@ namespace TazaFood_API.Controllers
                 {
                     DisplayName = user.DisplayName,
                     Email = user.Email,
-                    Address=user.Address,
                     Token=await tokenService.CreateTokenAsync(user,userManager)
                 };
 
@@ -97,7 +96,6 @@ namespace TazaFood_API.Controllers
                 {
                     DisplayName = newuser.DisplayName,
                     Email = newuser.Email,
-                    Address=newuser.Address,
                     Token = await tokenService.CreateTokenAsync(newuser,userManager)
                 };
                 return Ok(new
@@ -120,12 +118,7 @@ namespace TazaFood_API.Controllers
             {
                 DisplayName = user.DisplayName,
                 Email = user.Email,
-                Address = new Address
-                {
-                    Country = user.Address.Country,
-                    City = user.Address.City,
-                    Street = user.Address.Street
-                },
+                
                 
             }).ToList();
 
@@ -142,7 +135,6 @@ namespace TazaFood_API.Controllers
             {
                 DisplayName = currentuser.DisplayName,
                 Email=currentuser.Email,
-                Address=currentuser.Address,
                 Token= await tokenService.CreateTokenAsync(currentuser,userManager)
 
             });

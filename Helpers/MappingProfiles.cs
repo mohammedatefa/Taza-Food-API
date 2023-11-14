@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore.Migrations.Operations.Builders;
 using TazaFood_API.DTO;
 using TazaFood_Core.IdentityModels;
 using TazaFood_Core.Models;
+using TazaFood_Core.Models.Order_Aggregate;
 
 namespace TazaFood_API.Helpers
 {
@@ -17,7 +19,9 @@ namespace TazaFood_API.Helpers
 
 
             //mapping to user adress
-            CreateMap<Address, UserAddressDto>().ReverseMap();
+            CreateMap<TazaFood_Core.IdentityModels.Address, UserAddressDto>().ReverseMap();
+
+            CreateMap<UserAddressDto, TazaFood_Core.Models.Order_Aggregate.Address>();
         }
     }
 }

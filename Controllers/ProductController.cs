@@ -13,11 +13,11 @@ namespace TazaFood_API.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private IGenericRepository<Product> productRepo;
+        private IUnitOfWork productRepo;
         private IMapper mapper;
         private readonly IWebHostEnvironment environment;
 
-        public ProductController(IGenericRepository<Product> _productRepo,IMapper _mapper,IWebHostEnvironment _enviroment)
+        public ProductController(IUnitOfWork _productRepo,IMapper _mapper,IWebHostEnvironment _enviroment)
         {
             productRepo = _productRepo;
             mapper = _mapper;
@@ -31,7 +31,7 @@ namespace TazaFood_API.Controllers
         {
             //useing sepcification pattern to return products
             var spec = new ProductWithCategorySpecification();
-            var products = await productRepo.GetAllWithSpec(spec);
+            var products = await productRepo.Repository<Product>().GetAllWithSpec(spec);
 
             return Ok(mapper.Map<IReadOnlyList<Product>,IReadOnlyList<ProductReturnToDto>>(products));
         }
@@ -43,7 +43,7 @@ namespace TazaFood_API.Controllers
         {
             //using specification pattern to return product by id
             var spec = new ProductWithCategorySpecification(id);
-            var product = await productRepo.GetByIdWithSpec(spec);
+            var product = await productRepo.Repository<Product>().GetByIdWithSpec(spec);
 
             return Ok(mapper.Map<Product, ProductReturnToDto>(product));
         }
@@ -55,7 +55,7 @@ namespace TazaFood_API.Controllers
         {
             //useing sepcification pattern to return products
             var spec = new ProductWithCategorySpecification(sort);
-            var products = await productRepo.GetAllWithSpec(spec);
+            var products = await productRepo.Repository<Product>().GetAllWithSpec(spec);
 
             return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products));
         }
@@ -67,7 +67,7 @@ namespace TazaFood_API.Controllers
         {
             //useing sepcification fillter to return products 
             var spec = new ProductWithCategorySpecification(price,rate,category);
-            var products = await productRepo.GetAllWithSpec(spec);
+            var products = await productRepo.Repository<Product>().GetAllWithSpec(spec);
 
             return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products));
         }
@@ -78,11 +78,11 @@ namespace TazaFood_API.Controllers
         {
             //useing sepcification fillter to return products 
             var spec = new ProductWithCategorySpecification(prams);
-            var products = await productRepo.GetAllWithSpec(spec);
+            var products = await productRepo.Repository<Product>().GetAllWithSpec(spec);
             var data = mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductReturnToDto>>(products);
             var countspec = new ProductWithFillterationForPaginationSpecification(prams);
 
-            var count = await productRepo.GetCountWithSpec(countspec);
+            var count = await productRepo.Repository<Product>().GetCountWithSpec(countspec);
 
             return Ok(new ProductPagination<ProductReturnToDto>(prams.Pagesize, prams.pageIndex, count,data));
         }
@@ -102,7 +102,8 @@ namespace TazaFood_API.Controllers
             product.Price = price;
             product.CategoryId = categoryid;
             product.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
-            await productRepo.Add(product);
+            await productRepo.Repository<Product>().Add(product);
+            await productRepo.complete();
             return Ok();
       
         }
@@ -112,7 +113,7 @@ namespace TazaFood_API.Controllers
         public async Task<IActionResult> updateProduct(int id, string name, string description, int rate, int price, int categoryid, IFormFile formfile)
         {
             // Retrieve existing product from the database
-            Product product = await productRepo.GetById(id);
+            Product product = await productRepo.Repository<Product>().GetById(id);
 
             if (product == null)
             {
@@ -133,7 +134,9 @@ namespace TazaFood_API.Controllers
             product.ImageUrl = ImageUrlResolve.ResolveUrl(ImagePath);
 
             // Update the product in the database
-            await productRepo.Update(id, product);
+            await productRepo.Repository<Product>().Update(id, product);
+            await productRepo.complete();
+
 
             return Ok(product);
         }
@@ -143,7 +146,7 @@ namespace TazaFood_API.Controllers
         public async Task<IActionResult> DeleteProduct(int productId)
         {
             // Retrieve the existing product from the database
-            Product product = await productRepo.GetById(productId);
+            Product product = await productRepo.Repository<Product>().GetById(productId);
 
             if (product == null)
             {
@@ -159,11 +162,15 @@ namespace TazaFood_API.Controllers
                 if (System.IO.File.Exists(imagePath))
                 {
                     System.IO.File.Delete(imagePath);
+                    await productRepo.complete();
+
                 }
             }
 
             // Delete the product from the database
-            await productRepo.Delete(productId);
+            await productRepo.Repository<Product>().Delete(productId);
+            await productRepo.complete();
+
 
             return NoContent(); // Return 204 No Content upon successful deletion
         }
