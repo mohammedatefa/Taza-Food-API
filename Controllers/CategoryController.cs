@@ -10,10 +10,10 @@ namespace TazaFood_API.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly IGenericRepository<Category> CategoryRepo;
+        private readonly IUnitOfWork CategoryRepo;
         private readonly ICategoryRepository categoryRepo;
 
-        public CategoryController(IGenericRepository<Category> _CategoryRepo, ICategoryRepository categoryRepo)
+        public CategoryController(IUnitOfWork _CategoryRepo, ICategoryRepository categoryRepo)
         {
             CategoryRepo = _CategoryRepo;
             this.categoryRepo = categoryRepo;
@@ -22,7 +22,7 @@ namespace TazaFood_API.Controllers
         [HttpGet("GetCategories")]
         public async Task<IActionResult> getCategories()
         {
-            var categories = await CategoryRepo.GetAll();
+            var categories = await CategoryRepo.Repository<Category>().GetAll();
             return Ok(categories);
         }
 
@@ -30,7 +30,7 @@ namespace TazaFood_API.Controllers
         public async Task<IActionResult> GetCategoryById(int id)
         {
             var spec = new CategorySpecification(id);
-            var category = await CategoryRepo.GetByIdWithSpec(spec);
+            var category = await CategoryRepo.Repository<Category>().GetByIdWithSpec(spec);
             return Ok(category);
         }
 
@@ -45,14 +45,15 @@ namespace TazaFood_API.Controllers
             return Ok(category);
         }
 
-        [HttpPost]
+        [HttpPost("AddCategory")]
         public async Task<IActionResult> PostCategory(Category newCategory)
         {
             if(!ModelState.IsValid)    // worst case
             {
                 return BadRequest(ModelState);
             }
-            await CategoryRepo.Add(newCategory);
+            await CategoryRepo.Repository<Category>().Add(newCategory);
+            await CategoryRepo.complete();
             string url = Url.Link("CategoryDetailsRoute", new {id = newCategory.Id});
             return Created(url, newCategory);
         }
@@ -64,7 +65,9 @@ namespace TazaFood_API.Controllers
             {
                 return BadRequest(ModelState);
             }
-            bool isUpdated = await CategoryRepo.Update(id, newCategory);
+            bool isUpdated = await CategoryRepo.Repository<Category>().Update(id, newCategory);
+            await CategoryRepo.complete();
+
             if (!isUpdated)
             {
                 return NotFound("Category not found");
@@ -75,11 +78,12 @@ namespace TazaFood_API.Controllers
         [HttpDelete("id")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            bool isDeleted = await CategoryRepo.Delete(id);
+            bool isDeleted = await CategoryRepo.Repository<Category>().Delete (id);
             if (!isDeleted)
             {
                 return NotFound("Category not found");
             }
+            await CategoryRepo.complete();
             return StatusCode(StatusCodes.Status204NoContent, "Deleted Successed");
         }
 
