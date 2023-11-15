@@ -30,7 +30,7 @@ namespace TazaFood_API.Controllers
             var address = mapper.Map<UserAddressDto, Address>(newOrder.ShippingAddress);
             var order = await orderservice.CreateOrder(email, newOrder.cartId, newOrder.DeliveryMethod, address);
             if (order is null) return BadRequest("cant add order");
-            return Ok(order);
+            return Ok(mapper.Map<Order,OrderReturnToDto>(order));
         }
        
         [Authorize]
@@ -39,7 +39,7 @@ namespace TazaFood_API.Controllers
         {
             var Email = User.FindFirstValue(ClaimTypes.Email);
             var orders = orderservice.GetAllOrdersForUser(Email);
-            return Ok(orders.Result);
+            return Ok(mapper.Map<IReadOnlyList<Order>,IReadOnlyList<OrderReturnToDto>>(orders.Result));
         }
 
 
@@ -50,7 +50,7 @@ namespace TazaFood_API.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             var order = await orderservice.GetOrderById(orderId, email);
             if (order is null) return NotFound();
-            return Ok(order);
+            return Ok(mapper.Map<Order, OrderReturnToDto>(order));
         }
 
 
