@@ -15,8 +15,12 @@ namespace TazaFood_API.Extenssions
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+            //add cartitem services
+            services.AddScoped(typeof(ICartItemsRepository), typeof(CartItemRepository));
+
             //add mapper services
             services.AddAutoMapper(typeof(MappingProfiles));
+
 
             //add cors policy
             services.AddCors(options =>

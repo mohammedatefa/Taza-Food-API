@@ -34,7 +34,7 @@ namespace TazaFood_API.Controllers
             return Ok(category);
         }
 
-        [HttpGet("{name:alpha}")]
+        [HttpGet("{name}")]
         public async Task<IActionResult> GetCategoryByName(string name)
         {
             var category = await categoryRepo.GetByName(name);
@@ -82,5 +82,6 @@ namespace TazaFood_API.Controllers
             }
             return StatusCode(StatusCodes.Status204NoContent, "Deleted Successed");
         }
+
     }
 }
