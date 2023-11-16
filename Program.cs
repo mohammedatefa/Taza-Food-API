@@ -88,9 +88,13 @@ namespace TazaFood_API
 
                     //seeding user to identity database
                     var usermanger = services.GetRequiredService<UserManager<AppUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                     var Identitycontext = services.GetRequiredService<IdentityContext>();
                     await Identitycontext.Database.MigrateAsync();
                     await IdentityDbContextSeed.AppUserAsync(usermanger);
+                    await IdentityDbContextSeed.AppRoleAsync(roleManager);
+
+
                 }
                 catch (Exception ex)
                 {

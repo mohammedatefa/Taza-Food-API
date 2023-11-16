@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.Security.Claims;
 using TazaFood_API.DTO;
 using TazaFood_API.Extenssions;
 using TazaFood_Core.IdentityModels;
+using TazaFood_Core.Models;
 using TazaFood_Core.Services;
 
 namespace TazaFood_API.Controllers
@@ -35,6 +37,7 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpPost("Login")]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult<UserAccountDto>> Login(Login model)
         {
             if (ModelState.IsValid)
@@ -64,6 +67,7 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpPost("Register")]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult<UserAccountDto>> Register([FromForm] Register model)
         {
             if (ModelState.IsValid)
@@ -108,7 +112,7 @@ namespace TazaFood_API.Controllers
             return BadRequest("data is invalid check your data");
         }
 
-        [Authorize]
+        [Authorize (Roles = "Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<ActionResult<IReadOnlyList<UserAccountDto>>> GetAllUsers()
         {
@@ -125,12 +129,14 @@ namespace TazaFood_API.Controllers
             return Ok(userList);
         }
 
-        [Authorize]
+        [Authorize (Roles = "Admin")]
         [HttpGet("GetUser")]
         public async Task<ActionResult<UserAccountDto>> GetUser()
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             var currentuser = await userManager.FindByEmailAsync(email);
+
+
             return Ok(new UserAccountDto()
             {
                 DisplayName = currentuser.DisplayName,
@@ -166,7 +172,7 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpPost("AddAdmin")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]  // admin@taza.com   admin123
         public async Task<ActionResult<UserAccountDto>> AddAdmin([FromForm] Register model)
         {
             if (ModelState.IsValid)
@@ -213,5 +219,81 @@ namespace TazaFood_API.Controllers
             }
             return BadRequest("data is invalid check your data");
         }
+
+
+        [HttpPut("UpdateAccount")]
+        [Authorize]
+        public async Task<ActionResult<UserAccountDto>> PutAccount(string id , [FromForm] Register updatedAccountmodel)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.FindByIdAsync(id);
+                if (user is null)
+                {
+                    return NotFound("User not found");
+                }
+
+
+                user.DisplayName = updatedAccountmodel.FirstName + "_" + updatedAccountmodel.LastName;
+                user.UserName = updatedAccountmodel.Email.Split("@")[0];
+                user.PhoneNumber = updatedAccountmodel.PhoneNumber;
+                user.Email = updatedAccountmodel.Email;
+
+                var result = await userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+
+                    return BadRequest(ModelState);
+                }
+
+                string Messege = "Updated Succeeded";
+                var updatedAccount = new UserAccountDto
+                {
+                    DisplayName = user.DisplayName,
+                    Email = updatedAccountmodel.Email,
+                    Token = await tokenService.CreateTokenAsync(user, userManager)
+                };
+                return Ok(new
+                {
+                    messege = Messege,
+                    user = updatedAccount
+                });
+            }
+            return BadRequest("data is invalid check your data");
+        }
+
+
+        [HttpDelete("Delete")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user is null)
+            {
+                return NotFound("User not found");
+            }
+
+            var result = await userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return BadRequest(ModelState);
+            }
+
+            return StatusCode(StatusCodes.Status204NoContent, "Deleted Successed");
+        }
+
+
+
+
     }   
 }
