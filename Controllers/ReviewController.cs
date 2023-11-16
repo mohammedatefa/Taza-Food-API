@@ -19,26 +19,27 @@ namespace TazaFood_API.Controllers
             _reviewRepo = ReviewRepo;
         }
 
-        [HttpPost]
+        [HttpPost("AddReview")]
         public async Task<ActionResult<Review>> AddReview([FromForm] Review review)
         {
-            var userId = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
+            var email = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
+            var userid = "";
 
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(email))
             {
-                userId = "unknown";
+                userid = "unknown";
             }
+            userid = email;
 
-            
+            var newreview = _reviewRepo.Repository<Review>().Add(review);
+            await _reviewRepo.complete();
 
-            return Ok();
+            return Ok(review);
         }
 
 
-
         [HttpGet("GetReviews")]
-        [Authorize(Roles ="Admin")]
-
+        [Authorize]
         public async Task<ActionResult<Review>> GetReviews()
         {
             var reviews = await _reviewRepo.Repository<Review>().GetAll();

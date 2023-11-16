@@ -170,7 +170,7 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpPost("AddAdmin")]
-        [Authorize(Roles = "Admin")]  // admin@taza.com   admin123
+       /* [Authorize(Roles = "Admin")] */ // admin@taza.com   admin123
         public async Task<ActionResult<UserAccountDto>> AddAdmin([FromForm] Register model)
         {
             if (ModelState.IsValid)

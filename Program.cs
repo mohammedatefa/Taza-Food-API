@@ -80,7 +80,7 @@ namespace TazaFood_API
 
                 var ILoggerFactory = services.GetRequiredService<ILoggerFactory>();
                 try
-                {
+               {
                     var dbcontext = services.GetRequiredService<TazaDbContext>();
                     await dbcontext.Database.MigrateAsync();
                     //seeding the initial-data to database
@@ -99,7 +99,7 @@ namespace TazaFood_API
                 catch (Exception ex)
                 {
                     var logger = ILoggerFactory.CreateLogger<Program>();
-                    logger.LogError(ex, "there is som thing wrong.....");
+                    logger.LogError(ex, "there is some thing wrong.....");
                 }
             }
             #endregion 
