@@ -78,7 +78,7 @@ namespace TazaFood_API.Controllers
         [HttpDelete("id")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            bool isDeleted = await CategoryRepo.Repository<Category>().Delete (id);
+            bool isDeleted = await CategoryRepo.Repository<Category>().Delete(id);
             if (!isDeleted)
             {
                 return NotFound("Category not found");
