@@ -43,9 +43,9 @@ namespace TazaFood_API.Controllers
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByEmailAsync(model.Email);
-                if (user is null) return Unauthorized();
+                if (user is null) return Unauthorized("There Is An Account With This Email..");
                 var resualt = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-                if (!resualt.Succeeded) return Unauthorized();
+                if (!resualt.Succeeded) return Unauthorized("The Password Un Confirmed..");
 
                 string Messege = "Succeeded";
                 var account = new UserAccountDto()
@@ -122,8 +122,6 @@ namespace TazaFood_API.Controllers
             {
                 DisplayName = user.DisplayName,
                 Email = user.Email,
-
-
             }).ToList();
 
             return Ok(userList);

@@ -22,6 +22,18 @@ namespace TazaFood_API.Helpers
             CreateMap<TazaFood_Core.IdentityModels.Address, UserAddressDto>().ReverseMap();
 
             CreateMap<UserAddressDto, TazaFood_Core.Models.Order_Aggregate.Address>();
+
+            //mapping to order 
+            CreateMap<Order, OrderReturnToDto>()
+                .ForMember(d => d.DeliveryMethod, d => d.MapFrom(s => s.DeliveryMethod.ShortName))
+                .ForMember(d => d.Cost, d => d.MapFrom(s => s.DeliveryMethod.Cost))
+                .ForMember(d => d.DeliveryTime, d => d.MapFrom(s => s.DeliveryMethod.DeliveryTime));
+            CreateMap<OrderItem, OrderItemDto>()
+                .ForMember(d => d.Id, d => d.MapFrom(s => s.Product.ProductId))
+                .ForMember(d => d.ProductName, d => d.MapFrom(s => s.Product.ProductName))
+                .ForMember(d => d.ImageUrl, d => d.MapFrom(s => s.Product.ImageUrl))
+                .ForMember(d => d.ImageUrl, d => d.MapFrom<OrderItemImageResolve>());
+            
         }
     }
 }

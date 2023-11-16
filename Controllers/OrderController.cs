@@ -29,18 +29,37 @@ namespace TazaFood_API.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             var address = mapper.Map<UserAddressDto, Address>(newOrder.ShippingAddress);
             var order = await orderservice.CreateOrder(email, newOrder.cartId, newOrder.DeliveryMethod, address);
-            //if (order is null) return BadRequest("cant add order");
-            return Ok(order);
+            if (order is null) return BadRequest("cant add order");
+            return Ok(mapper.Map<Order,OrderReturnToDto>(order));
         }
        
         [Authorize]
-        [HttpGet("GetOrders")]
-
+        [HttpGet("GetAllOrders")]
         public async Task<IActionResult> GetAllOrders(string UserEmail)
         {
             var Email = User.FindFirstValue(ClaimTypes.Email);
             var orders = orderservice.GetAllOrdersForUser(Email);
-            return Ok(orders);
+            return Ok(mapper.Map<IReadOnlyList<Order>,IReadOnlyList<OrderReturnToDto>>(orders.Result));
+        }
+
+
+        [Authorize]
+        [HttpGet("GetOrder")]
+        public async Task<IActionResult> getUserOrder(int orderId)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            var order = await orderservice.GetOrderById(orderId, email);
+            if (order is null) return NotFound();
+            return Ok(mapper.Map<Order, OrderReturnToDto>(order));
+        }
+
+
+        [Authorize]
+        [HttpGet("DeliveryMethods")]
+        public async Task<IActionResult> GetAllDeleveryMethods()
+        {
+            var deleverymethods = await orderservice.GetDeleveryMethods();
+            return Ok(deleverymethods);
         }
     }
 
