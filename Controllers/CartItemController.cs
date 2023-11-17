@@ -18,10 +18,6 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpGet("GetCart")]
-
-
-        //get cartitems by id
-        [HttpGet("{id}")]
         public async Task<ActionResult<UserCart>> GetCart(string id)
         {
             var cart = await cartItemRepo.GetCartAsync(id);
@@ -41,8 +37,6 @@ namespace TazaFood_API.Controllers
             return cart;
         }
 
-
-        [HttpPost]
         [HttpPost("UpdateCart")]
         public async Task<ActionResult<UserCart>> UpdateCart(UserCart cart)
         {
@@ -57,7 +51,6 @@ namespace TazaFood_API.Controllers
         {
             return await cartItemRepo.DeleteCartAsync(id);
         }
-
 
         [HttpPost("AddToCart")]
         public async Task<ActionResult<UserCart>> AddToCart([FromBody] CartItem cartItem)

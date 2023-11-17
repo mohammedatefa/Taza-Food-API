@@ -13,11 +13,13 @@ namespace TazaFood_API.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService paymentService;
+        private readonly ILogger<PaymentController> logger;
         private const string endpointSecret = "whsec_123";
 
-        public PaymentController(IPaymentService PaymentService)
+        public PaymentController(IPaymentService PaymentService, ILogger<PaymentController> Logger)
         {
             paymentService = PaymentService;
+            logger = Logger;
         }
 
         [Authorize]
@@ -42,18 +44,20 @@ namespace TazaFood_API.Controllers
             var paymentIntent = (PaymentIntent)stripeEvent.Data.Object;
             Order order;
 
-            //switch (stripeEvent.Type)
-            //{
-            //    case Events.PaymentIntentSucceeded:
-            //        order=  await paymentService.UpdatePaymentIntentWithSucceededOrFaild(paymentIntent, true);
-            //        break;
-            //    case Events.PaymentIntentPaymentFailed:
-            //        order= await paymentService.UpdatePaymentIntentWithSucceededOrFaild(paymentIntent, false);
+            switch (stripeEvent.Type)
+            {
+                case Events.PaymentIntentSucceeded:
+                    order = await paymentService.UpdatePaymentIntentWithSucceededOrFaild(paymentIntent.Id, true);
+                    logger.LogInformation("Payment Intent Is Succeeded :)", paymentIntent.Id);
+                    break;
+                case Events.PaymentIntentPaymentFailed:
+                    order = await paymentService.UpdatePaymentIntentWithSucceededOrFaild(paymentIntent.Id, false);
+                    logger.LogInformation("Payment Intent Is Failed :( ", paymentIntent.Id);
 
-            //        break;
-            //    default:
-            //        break;
-            //}
+                    break;
+                default:
+                    break;
+            }
 
             return Ok("done");
            
