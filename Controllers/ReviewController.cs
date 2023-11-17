@@ -20,17 +20,23 @@ namespace TazaFood_API.Controllers
         }
 
         [HttpPost("AddReview")]
-        public async Task<ActionResult<Review>> AddReview([FromForm] Review review)
+        public async Task<ActionResult<Review>> AddReview(string content)
         {
             var email = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
-            var userid = "";
+            var userName = "";
 
             if (string.IsNullOrEmpty(email))
             {
-                userid = "unknown";
+                userName = "unknown";
             }
-            userid = email;
+            else
+            {
+                userName = email;
+            }
 
+            var review = new Review();
+            review.UserName = userName;
+            review.Content = content;
             var newreview = _reviewRepo.Repository<Review>().Add(review);
             await _reviewRepo.complete();
 

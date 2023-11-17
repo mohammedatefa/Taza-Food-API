@@ -20,7 +20,7 @@ namespace TazaFood_API.Controllers
         [HttpGet("GetCart")]
         public async Task<ActionResult<UserCart>> GetCart(string id)
         {
-            var cart = await cartItemRepo.GetCartAsync(id);
+            //var cart = await cartItemRepo.GetCartAsync(id);
 
             var cartId = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
 
@@ -28,7 +28,7 @@ namespace TazaFood_API.Controllers
 
                 cartId = "DefualtUserId";
 
-            cart = await cartItemRepo.GetCartAsync(cartId);
+            var cart = await cartItemRepo.GetCartAsync(cartId);
 
 
             //if the cart is existed return it else create new one and return it 
@@ -94,18 +94,18 @@ namespace TazaFood_API.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
+                var cartId = User.FindFirstValue(ClaimTypes.Email.Split("@")[0]);
 
-                if (string.IsNullOrEmpty(userId))
+                if (string.IsNullOrEmpty(cartId))
+
+                    cartId = "DefualtUserId";
+
+                var userCart = await cartItemRepo.GetCartAsync(cartId);
+
+
+                if (userCart is null)
                 {
-                    userId = "DefaultUserId";
-                }
-
-                var userCart = await cartItemRepo.GetCartAsync(userId);
-
-                if (userCart == null)
-                {
-                    return NotFound($"Cart not found for user with ID: {userId}");
+                    return NotFound($"Cart not found for user with ID: {cartId}");
                 }
 
                 var existingItem = userCart.CartItems.FirstOrDefault(item => item.Id == productId);
