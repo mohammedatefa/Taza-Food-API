@@ -82,7 +82,7 @@ namespace TazaFood_API
                 try
                {
 
-                    //seeding user to identity database
+
                     var usermanger = services.GetRequiredService<UserManager<AppUser>>();
                     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
                     var Identitycontext = services.GetRequiredService<IdentityContext>();
@@ -95,6 +95,7 @@ namespace TazaFood_API
                     //seeding the initial-data to database
                     await TazaContextSeed.Dataseeding(dbcontext);
 
+                  
                 }
                 catch (Exception ex)
                 {

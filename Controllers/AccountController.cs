@@ -43,11 +43,12 @@ namespace TazaFood_API.Controllers
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByEmailAsync(model.Email);
-                if (user is null) return Unauthorized("There Is An Account With This Email..");
-                var resualt = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-                if (!resualt.Succeeded) return Unauthorized("The Password Un Confirmed..");
+                if (user is null) return Unauthorized("There Is No Account With This Email.");
 
-                string Messege = "Succeeded";
+                var result = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                if (!result.Succeeded) return Unauthorized("The Password Is Incorrect.");
+
+                string message = "Succeeded";
                 var account = new UserAccountDto()
                 {
                     DisplayName = user.DisplayName,
@@ -55,16 +56,20 @@ namespace TazaFood_API.Controllers
                     Token = await tokenService.CreateTokenAsync(user, userManager)
                 };
 
+                // Check user roles
+                var roles = await userManager.GetRolesAsync(user);
+                string accountRole = roles.Contains("Admin") ? "Admin" : "User";
+
                 return Ok(new
                 {
-                    messege = Messege,
-                    user = account
-
+                    Message = message,
+                    user = account,
+                    AccountRole = accountRole
                 });
-
             }
-            return BadRequest("invalid data...");
+            return BadRequest("Invalid data...");
         }
+
 
         [HttpPost("Register")]
         //[ValidateAntiForgeryToken]

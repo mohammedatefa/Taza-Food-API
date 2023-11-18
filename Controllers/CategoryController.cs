@@ -58,7 +58,7 @@ namespace TazaFood_API.Controllers
             return Created(url, newCategory);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("updteCategory")]
         public async Task<IActionResult> PutCategory(int id ,  Category newCategory)
         {
             if (!ModelState.IsValid)
@@ -75,7 +75,7 @@ namespace TazaFood_API.Controllers
             return StatusCode(StatusCodes.Status204NoContent, "Saved Successed");
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("DeleteCtecory")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             bool isDeleted = await CategoryRepo.Repository<Category>().Delete(id);

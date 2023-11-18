@@ -26,7 +26,7 @@ namespace TazaFood_API.Controllers
         }
 
         //get all products
-        [HttpGet]
+        [HttpGet("GetAllProducts")]
         public async Task<IActionResult> GetAll()
         {
             //useing sepcification pattern to return products
@@ -38,7 +38,7 @@ namespace TazaFood_API.Controllers
 
 
         //get productby Id
-        [HttpGet("{id}")]
+        [HttpGet("GetProduct")]
         public async Task<IActionResult> GetById(int id)
         {
             //using specification pattern to return product by id
@@ -142,7 +142,7 @@ namespace TazaFood_API.Controllers
         }
 
         //delete product
-        [HttpDelete("DeleteProduct/{productId}")]
+        [HttpDelete("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct(int productId)
         {
             // Retrieve the existing product from the database
