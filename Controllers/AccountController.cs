@@ -112,7 +112,7 @@ namespace TazaFood_API.Controllers
             return BadRequest("data is invalid check your data");
         }
 
-        [Authorize (Roles = "Admin")]
+        //[Authorize (Roles = "Admin")]
         [HttpGet("GetAllUsers")]
         public async Task<ActionResult<IReadOnlyList<UserAccountDto>>> GetAllUsers()
         {

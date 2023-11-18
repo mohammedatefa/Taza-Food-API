@@ -81,10 +81,6 @@ namespace TazaFood_API
                 var ILoggerFactory = services.GetRequiredService<ILoggerFactory>();
                 try
                {
-                    var dbcontext = services.GetRequiredService<TazaDbContext>();
-                    await dbcontext.Database.MigrateAsync();
-                    //seeding the initial-data to database
-                    await TazaContextSeed.Dataseeding(dbcontext);
 
                     //seeding user to identity database
                     var usermanger = services.GetRequiredService<UserManager<AppUser>>();
@@ -94,6 +90,10 @@ namespace TazaFood_API
                     await IdentityDbContextSeed.AppUserAsync(usermanger);
                     await IdentityDbContextSeed.AppRoleAsync(roleManager);
 
+                    var dbcontext = services.GetRequiredService<TazaDbContext>();
+                    await dbcontext.Database.MigrateAsync();
+                    //seeding the initial-data to database
+                    await TazaContextSeed.Dataseeding(dbcontext);
 
                 }
                 catch (Exception ex)
